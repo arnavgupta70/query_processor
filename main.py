@@ -1,0 +1,37 @@
+import sys
+from prompt_selector import PromptSelector, QueryCategory
+from logger import AppLogger
+
+def main():
+    """
+    Main function to run the AI Query Processor as a command-line tool.
+    """
+    logger = AppLogger()
+
+    # 1. Capture user input from command line or prompt
+    user_query = capture_user_input()
+
+    # 2. Initialize PromptSelector to generate the correct prompt
+    prompt_selector = PromptSelector()
+
+    try:
+        prompt, query_category = prompt_selector.generate_prompt(user_query)
+    except ValueError as e:
+        logger.log_error("PromptSelectorError", str(e))
+        print("Failed to generate a valid prompt. Please try again.")
+        return
+
+def capture_user_input():
+    """
+    Retrieves user input either from command line arguments or from stdin.
+
+    Returns:
+        str: The combined user query string.
+    """
+    if len(sys.argv) > 1:
+        return " ".join(sys.argv[1:])
+    else:
+        return input("Enter your query: ")
+
+if __name__ == "__main__":
+    main()
