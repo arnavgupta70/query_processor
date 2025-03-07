@@ -16,7 +16,7 @@ class ResponseParser:
         Store disclaimers to filter response.
         """
         self.default_end_note = (
-            "\n\nNote: This is a simulated AI response; content may not be fully accurate.\n"
+            "\n\nNote: This is a AI response; content may not be fully accurate.\n"
         )
 
     def parse_response(self, raw_response: str, query_category: QueryCategory) -> str:
@@ -38,6 +38,6 @@ class ResponseParser:
             raw_response += "\n\nIf the issue persists, consider contacting technical support or an expert."
 
         # Add a default note at the end
-        final_output = raw_response.strip() + self.default_end_note
+        final_output = raw_response + self.default_end_note
 
         return final_output

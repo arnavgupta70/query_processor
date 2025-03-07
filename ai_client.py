@@ -1,12 +1,17 @@
 """
 ai_client.py
 
-This module manages interactions with an AI model. 
-For now, we shall simulate AI responses, but can be 
-extended to use external service.
+This module interacts with the Cohere Chat API to get answers
+based on the prompt (user query). It replaces the prior simulation.
+
+Prerequisites:
+1. pip install cohere
+2. Set Cohere API key in this file or via an environment variable.
 """
 
-import random
+import cohere
+from dotenv import load_dotenv
+import os
 import time
 
 class AIClientError(Exception):
@@ -16,60 +21,93 @@ class AIClientError(Exception):
     pass
 
 class AIClient:
-    def __init__(self):
+    def __init__(
+        self,
+        api_key: str = "",
+        model_name: str = "command-r-plus-08-2024",
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
+    ):
         """
-        Initialize the AIClient. In a real-world scenario,
-        we would store API credentials and endpoints here.
-        """
-        pass
-
-    def get_ai_response(self, prompt: str, max_retries=3, retry_delay=1) -> str:
-        """
-        Simulates response from AI system.
+        Initializes the AIClient with Cohere's Chat API.
 
         Args:
-            prompt (str): The constructed prompt (including user query).
-            max_retries (int): Number of times to retry if there's a failure.
-            retry_delay (float): Delay in seconds between retries.
+            api_key (str): Your Cohere API key (if not provided, tries COHERE_API_KEY env var).
+            model_name (str): Cohere model name, e.g. "command-r-plus-08-2024".
+            max_retries (int): Number of times to retry if failure.
+            retry_delay (float): Time (seconds) to wait between retries.
+        """
+        # Retrieve API key from argument or environment
+        load_dotenv()
+        self.api_key = api_key or os.getenv("COHERE_API_KEY")
+        if not self.api_key:
+            raise AIClientError("Cohere API key not found. Provide api_key or set COHERE_API_KEY env var.")
+
+        self.model_name = model_name
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
+
+        # Create a Cohere client (ClientV2 for the chat endpoint)
+        self.client = cohere.ClientV2(api_key=self.api_key)
+
+    def get_ai_response(self, prompt: str) -> str:
+        """
+        Retrieves a response from Cohere's Chat API using the provided prompt.
+
+        Args:
+            prompt (str): The user's query or system instructions.
 
         Returns:
-            str: The AI’s response (simulated as of now)
+            str: The Cohere model's response text.
 
         Raises:
-            AIClientError: If the AI system fails after all retries.
+            AIClientError: If Cohere API fails after max_retries or the response is invalid.
         """
         if not prompt.strip():
             raise AIClientError("Prompt cannot be empty.")
 
-        # Simulate transient failures 25% of the time
-        for attempt in range(1, max_retries + 1):
-            if random.random() < 0.75:
-                # 75% chance it “succeeds” on each attempt
-                return self._simulate_response(prompt)
-            else:
-                # Simulate an error
-                if attempt < max_retries:
-                    time.sleep(retry_delay)
+        # Attempt to call Cohere multiple times (up to max_retries) to handle transient issues
+        last_err = None
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                # We construct messages for the Chat API
+                # The entire prompt is treated as a single user message in this simple example.
+                messages = [
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ]
+
+                # Call Cohere's Chat endpoint
+                # (can use chat_stream to get response in real time, without wait)
+                response = self.client.chat(
+                    model=self.model_name,
+                    messages=messages,
+                )
+
+                # Extract the text from the response
+                if not response.message or not response.message.content:
+                    raise AIClientError("Empty response from Cohere.")
+
+                # If message.content is a list or string, handle accordingly.
+                # For Command-R style responses, we expect `response.message.content` to be a list of tokens/segments.
+                # The below is a generic approach if it's a list:
+                content = response.message.content
+                if isinstance(content, list):
+                    return "".join(segment.text for segment in content)
                 else:
-                    raise AIClientError("AI service is unresponsive after multiple attempts.")
+                    # If it's a string, just return it directly
+                    return content
 
-        # Should never get here if the logic above is correct,
-        # but in case we do, raise an error.
-        raise AIClientError("Unknown error occurred in AIClient.")
+            except Exception as e:
+                last_err = e
+                if attempt < self.max_retries:
+                    time.sleep(self.retry_delay)
+                else:
+                    # Exhausted all retries
+                    raise AIClientError(f"Cohere Chat API failed after {self.max_retries} attempts."
+                                       f"Last error: {last_err}") from last_err
 
-    def _simulate_response(self, prompt: str) -> str:
-        """
-        Produces a MOCK response based on the prompt content.
-        """
-        # For now, randomly picks any of the "responses" and returns it.
-        # Can be extended further (eg. add logic to parse prompt and then
-        # provide a tailored response specific to query)
-        simulated_responses = [
-            "Certainly! Here’s a detailed breakdown...",
-            "Here’s a concise explanation of the topic...",
-            "Apologies, I need more information. Could you clarify?",
-            "Below are some steps you can follow to resolve the issue...",
-            "Here’s a high-level overview..."
-        ]
-        chosen_response = random.choice(simulated_responses)
-        return chosen_response
+        # Error handling (unlikely to reach here though).
+        raise AIClientError("Unknown error occurred in Cohere AI client.")
