@@ -92,7 +92,6 @@ class AIClient:
 
                 # If message.content is a list or string, handle accordingly.
                 # For Command-R style responses, we expect `response.message.content` to be a list of tokens/segments.
-                # The below is a generic approach if it's a list:
                 content = response.message.content
                 if isinstance(content, list):
                     return "".join(segment.text for segment in content)
