@@ -1,5 +1,6 @@
 import sys
 from prompt_selector import PromptSelector, QueryCategory
+from ai_client import AIClient, AIClientError
 from logger import AppLogger
 
 def main():
@@ -19,6 +20,20 @@ def main():
     except ValueError as e:
         logger.log_error("PromptSelectorError", str(e))
         print("Failed to generate a valid prompt. Please try again.")
+        return
+    
+    # 3. Interact with the AI (simulation for now)
+    ai_client = AIClient()
+    raw_response = None
+    try:
+        raw_response = ai_client.get_ai_response(prompt)
+    except AIClientError as e:
+        logger.log_error("AIClientError", str(e))
+        print("The AI service is unavailable or encountered an error. Please try later.")
+        return
+    except Exception as e:
+        logger.log_error("UnexpectedAIError", str(e))
+        print("An unexpected error occurred while communicating with the AI.")
         return
 
 def capture_user_input():
