@@ -60,40 +60,42 @@ Set it in your shell or environment
 
 (e.g., `export COHERE_API_KEY="your_key_here"` on Linux/Mac, `set COHERE_API_KEY=your_key_here` on Windows).
 
-    - If you don’t want to set an environment variable, you can pass api_key directly to the AIClient constructor in main.py, but using environment variables is generally preferred for secrets.
+If you don’t want to set an environment variable, you can pass api_key directly to the AIClient constructor in main.py, but using environment variables is generally preferred for secrets.
 
 # Usage
 
 1. (Optional) Train the Model Manually
 If you want to train the classifier before running the main app:
 
-    poetry run python train_query_classifier.py
+        poetry run python train_query_classifier.py
 
 This script uses a small, hardcoded dataset to train a Logistic Regression model, saving it to query_classifier.joblib.
 
 2. Run the Application
 If you have the Poetry shell activated
-    python main.py
+
+        python main.py
 
 Or, from outside the poetry shell
-    poetry run python main.py
+
+        poetry run python main.py
 
 If `query_classifier.joblib` is not found, do Step 1 and try again.
 
 3. Flow
-- Model Check: main.py starts the process.
-- Classification & Prompt: prompt_selector.py loads the model, categorizes the query, and builds a tailored prompt.
-- Cohere Call: ai_client.py calls Cohere’s Chat API using your API key.
-- Response Parsing: response_parser.py cleans or enriches the AI’s text.
+- `main.py` starts the process.
+- Classification & Prompt: `prompt_selector.py` loads the model, categorizes the query, and builds a tailored prompt.
+- Cohere Call: `ai_client.py` calls Cohere’s Chat API using your API key.
+- Response Parsing: `response_parser.py` cleans or enriches the AI’s text.
 - Display: The user sees the final answer.
 
 # Testing
 Run all tests via:
 
-    If in poetry shell:
+    # If in poetry shell:
     python -m unittest discover -s tests
 
-    Or with poetry run:
+    # Or with poetry run:
     poetry run python -m unittest discover -s tests
 
 ## Mocking Strategy
