@@ -24,7 +24,7 @@ This repository contains a robust reference implementation of an AI-Driven Query
 5. Cohere Integration:
 
 - ai_client.py now interacts with Cohere’s Chat API using cohere.ClientV2.
-You must set your Cohere API key as an environment variable COHERE_API_KEY or provide it explicitly.
+- You must set your Cohere API key as an environment variable COHERE_API_KEY or provide it explicitly.
 
 # Requirements & Installation
 
@@ -43,16 +43,21 @@ If you haven’t already:
 - Install Dependencies with Poetry
 
 `poetry install`
+
 This will create/update a virtual environment and install everything declared in `pyproject.toml`.
 
 - Activate the Poetry Shell (optional but convenient):
 
 `poetry shell`
+
 Now you can run commands without prefixing poetry run.
 
 - COHERE_API_KEY
+
 Your Cohere API key.
+
 Set it in your shell or environment 
+
 (e.g., `export COHERE_API_KEY="your_key_here"` on Linux/Mac, `set COHERE_API_KEY=your_key_here` on Windows).
 
     - If you don’t want to set an environment variable, you can pass api_key directly to the AIClient constructor in main.py, but using environment variables is generally preferred for secrets.
@@ -62,21 +67,21 @@ Set it in your shell or environment
 1. (Optional) Train the Model Manually
 If you want to train the classifier before running the main app:
 
-`poetry run python train_query_classifier.py`
+    poetry run python train_query_classifier.py
 
-    This script uses a small, hardcoded dataset to train a Logistic Regression model, saving it to query_classifier.joblib.
+This script uses a small, hardcoded dataset to train a Logistic Regression model, saving it to query_classifier.joblib.
 
 2. Run the Application
-### If you have the Poetry shell activated
-python main.py
+If you have the Poetry shell activated
+    python main.py
 
-### Or, from outside the poetry shell
-poetry run python main.py
+Or, from outside the poetry shell
+    poetry run python main.py
 
-If query_classifier.joblib is not found, do Step 1 and try again.
+If `query_classifier.joblib` is not found, do Step 1 and try again.
 
 3. Flow
-- Model Check: If query_classifier.joblib doesn’t exist, main.py triggers a training script subprocess.
+- Model Check: main.py starts the process.
 - Classification & Prompt: prompt_selector.py loads the model, categorizes the query, and builds a tailored prompt.
 - Cohere Call: ai_client.py calls Cohere’s Chat API using your API key.
 - Response Parsing: response_parser.py cleans or enriches the AI’s text.
@@ -84,20 +89,24 @@ If query_classifier.joblib is not found, do Step 1 and try again.
 
 # Testing
 Run all tests via:
-### If in poetry shell:
-python -m unittest discover -s tests
 
-### Or with poetry run:
-poetry run python -m unittest discover -s tests
+    If in poetry shell:
+    python -m unittest discover -s tests
+
+    Or with poetry run:
+    poetry run python -m unittest discover -s tests
 
 ## Mocking Strategy
 test_ai_client.py: Mocks out cohere.ClientV2 to avoid actual API calls.
+
 test_main.py: Mocks user input and AI responses to test the main flow in isolation.
+
 Integration vs. Unit Tests: Integration tests patch less (only external calls), while unit tests patch individual modules more thoroughly.
 
 # Key Files
 
 1. main.py
+
 Orchestrates the entire flow:
 - Checks/loads the ML model,
 - Captures user input,
@@ -106,18 +115,23 @@ Orchestrates the entire flow:
 - Displays the final answer.
 
 2. train_query_classifier.py
+
 Trains a simple text classifier (TF-IDF + Logistic Regression) to categorize user queries. Saves the model as query_classifier.joblib.
 
 3. prompt_selector.py
+
 Loads the trained model, predicts the query category, and composes a specialized prompt string based on that category.
 
 4. ai_client.py
+
 Interacts with Cohere Chat API (via cohere.ClientV2). Replaces the prior random simulation logic.
 
 5. response_parser.py
+
 Cleans the AI response (e.g., removing disclaimers, adding disclaimers of your own, formatting steps for troubleshooting queries, etc.).
 
 6. tests/
+
 Contains unit/integration tests using Python’s unittest, ensuring each component behaves correctly. Mocks are used to avoid hitting real endpoints in tests.
 
 # Design Overview
@@ -143,7 +157,7 @@ Contains unit/integration tests using Python’s unittest, ensuring each compone
 - Ensures you’re not making real calls to Cohere or rewriting model files.
 - Keeps tests deterministic and fast.
 
-# ----
+#
 
 Enjoy using the AI Query Processor with Poetry!
 Feel free to raise issues or PRs for enhancements, and happy hacking.
