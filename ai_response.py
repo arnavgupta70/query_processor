@@ -15,7 +15,6 @@ class ResponseParser:
         """
         Store disclaimers to filter response.
         """
-        self.disclaimer_patterns = ["I'm just an AI", "I am not a lawyer", "I do not guarantee"]
         self.default_end_note = (
             "\n\nNote: This is a simulated AI response; content may not be fully accurate.\n"
         )
@@ -33,10 +32,6 @@ class ResponseParser:
         """
         if not raw_response:
             return "No response was received. Please try again or revise your question."
-
-        # Remove disclaimers from the text
-        for pattern in self.disclaimer_patterns:
-            raw_response = raw_response.replace(pattern, "")
 
         # Customize the final message based on category
         if query_category == QueryCategory.TROUBLESHOOTING:
