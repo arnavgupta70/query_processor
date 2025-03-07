@@ -1,6 +1,7 @@
 import sys
 from prompt_selector import PromptSelector, QueryCategory
 from ai_client import AIClient, AIClientError
+from ai_response import ResponseParser
 from logger import AppLogger
 
 def main():
@@ -35,6 +36,14 @@ def main():
         logger.log_error("UnexpectedAIError", str(e))
         print("An unexpected error occurred while communicating with the AI.")
         return
+    
+    # 4. Parse the AI response
+    parser = ResponseParser()
+    final_answer = parser.parse_response(raw_response, query_category)
+
+    # 5. Display the final answer to the user
+    print("\n=== AI Response ===")
+    print(final_answer)
 
 def capture_user_input():
     """
